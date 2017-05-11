@@ -22,7 +22,7 @@ class field(object):
         print('  1 2 3 4 5 6 7 8')
         for i in range(size):
             list = []
-            for j in range(size):
+            for j in range(size+1):
                 if j == 0:
                     list.append(str(i+1))
                 elif self.field[i][j-1] == 1:
@@ -182,6 +182,7 @@ class field(object):
             while not field[move[0][0]-x][move[0][1]+x] == rev_stone:
                 field[move[0][0]-x][move[0][1]+x] = rev_stone
                 x += 1
+
         return field
 
     def count_score(self, size=8):
@@ -195,7 +196,7 @@ class field(object):
                    second_score += 1
         print("黒:"+str(fast_score))
         print("白:"+str(second_score))
-        if fast_score + second_score == 64:
+        if fast_score + second_score == 64 or fast_score == 0 or second_score == 0:
             self.finishi = True
             if fast_score > second_score:
                 print("勝者：黒")
@@ -238,17 +239,18 @@ def get_input(list):
             move = True
     return [[column, row], direct]
 class com(field):
-    def __init__(self, field, turn, level=2):
-        self.faster = turn % 2
+    def __init__(self, field, faster, turn, level=2):
+        self.faster = faster
         self.level = level
         self.field = field
+        self.turn = turn
     def search_field(self, a=0, depth=3):
-        candidate_move = super(com, self).check_next_move(a)
+        candidate_move = super(com, self).check_next_move(a+self.turn)
         current_field = self.field.copy()
         tmp_score, tmp_corner = None, None
         for move in candidate_move:
             self.field = current_field.copy()
-            super(com, self).renew_field(move, self.field, a)
+            super(com, self).renew_field(move, self.field, a+self.turn)
             if a == depth:
                 score, corner = self.evaluate_field(a, self.field, self.faster)
                 tmp_score, tmp_corer = self.select_best_field(score, corner, tmp_score, tmp_corner, a)
@@ -316,7 +318,7 @@ class com(field):
                     fast_score += 1
                 elif field[i][j] == 1:
                     second_score += 1
-        if a % 2 == 0 and faster % 2 == 1 or a % 2 == 1 and faster % 2 == 0:
+        if self.faster == 1:
             return fast_score-second_score, fast_corner-second_corner
         else:
             return second_score-fast_score, second_corner-fast_corner
@@ -328,25 +330,35 @@ def main():
             f.print_field()
             f.count_score()
             next_move = f.check_next_move()
-            player_move = get_input(next_move)
-            f.field = f.renew_field(player_move, f.field)
+            if next_move != []:
+                player_move = get_input(next_move)
+                f.field = f.renew_field(player_move, f.field)
+            else:
+                print("パス")
             f.print_field()
             f.count_score()
-            c = com(f.field, f.turn)
-            com_move = c.search_field()
-            f.renew_field(com_move, f.field)
+            if f.check_next_move() != []:
+                c = com(f.field, f.faster, f.turn)
+                com_move = c.search_field()
+                f.renew_field(com_move, f.field)
+            else:
+                print("パス")
     else:
         while f.finish == False:
             f.print_field()
             f.count_score()
-            c = com(f.field, f.turn)
-            com_move = c.search_field()
-            f.renew_field(com_move, f.field)
+            if f.check_next_move() != []:
+                c = com(f.field, f.faster, f.turn)
+                com_move = c.search_field()
+                f.renew_field(com_move, f.field)
+            else:
+                print("パス")
             f.print_field()
             f.count_score()
-            f.print_field()
             next_move = f.check_next_move()
-            player_move = get_input(next_move)
-            f.field = f.renew_field(player_move, f.field)
-
+            if next_move != []:
+                player_move = get_input(next_move)
+                f.field = f.renew_field(player_move, f.field)
+            else:
+                print("パス")
 main()
