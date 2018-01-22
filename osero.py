@@ -26,9 +26,9 @@ class field(object):
                 if j == 0:
                     list.append(str(i+1))
                 elif self.field[i][j-1] == 1:
-                    list.append("⚪")
+                    list.append("○")
                 elif self.field[i][j-1] == -1:
-                    list.append("⚫")
+                    list.append("●")
                 else:
                     list.append(" ")
             print(" ".join(list))
